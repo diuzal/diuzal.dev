@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tantuni Gaming — Sunucu Kurulum Rehberi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0d0f0d;
+      --surface:  #1a1f1a;
+      --surface2: #222722;
+      --border:   #2d382d;
+      --green:    #5aad1e;
+      --green-lt: #7ed438;
+      --green-glow: rgba(90,173,30,.35);
+      --blue:     #4ad4f5;
+      --gold:     #f0a91e;
+      --red:      #e05252;
+      --text:     #dde8dd;
+      --muted:    #6b7d6b;
+      --radius:   0px; /* blocky */
+      --pixel: 'Press Start 2P', monospace;
+      --body: 'Inter', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      line-height: 1.75;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── PIXEL BORDER MIXIN ─────────────────────────── */
+    .px-panel {
+      border: 4px solid;
+      border-color: #4a5e4a #1a241a #1a241a #4a5e4a;
+      outline: 4px solid #0d0f0d;
+      outline-offset: -8px;
+      background: var(--surface);
+      position: relative;
+    }
+    .px-panel::before {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border: 2px solid rgba(255,255,255,.04);
+      pointer-events: none;
+    }
+
+    /* ─── CANVAS / PARTICLE BG ──────────────────────── */
+    #particle-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .45;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────── */
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .grass-strip {
+      height: 32px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          #4a8a1c 0px, #4a8a1c 16px,
+          #3d7318 16px, #3d7318 32px
+        );
+      border-bottom: 8px solid #2d4f10;
+      image-rendering: pixelated;
+    }
+
+    .dirt-strip {
+      height: 16px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          #7a4f2a 0px, #7a4f2a 8px,
+          #6b4422 8px, #6b4422 16px
+        );
+    }
+
+    .header-inner {
+      padding: 64px 24px 56px;
+      text-align: center;
+      background: rgba(5,7,5,0.55);
+    }
+
+    .server-tag {
+      font-family: var(--pixel);
+      font-size: .9rem;
+      letter-spacing: .15em;
+      color: var(--green);
+      margin-bottom: 20px;
+      display: block;
+      text-shadow: 0 2px 0 rgba(0,0,0,.8), 0 0 20px var(--green-glow);
+    }
+
+    .hero-title {
+      font-family: var(--pixel);
+      font-size: clamp(1.1rem, 3.5vw, 2rem);
+      line-height: 1.6;
+      color: #fff;
+      text-shadow:
+        3px 3px 0 #1a2e1a,
+        0 0 40px rgba(90,173,30,.4);
+      margin-bottom: 20px;
+    }
+
+    .hero-title span { color: var(--green-lt); }
+
+    .hero-sub {
+      font-family: var(--body);
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 500px;
+      margin: 0 auto 32px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 2px solid var(--green);
+      box-shadow: 0 0 16px var(--green-glow);
+      padding: 8px 18px;
+      font-family: var(--pixel);
+      font-size: .55rem;
+      color: var(--green-lt);
+      letter-spacing: .08em;
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      display: inline-block;
+      animation: blink 1.4s step-end infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ─── PROGRESS BAR ───────────────────────────────── */
+    .progress-track {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 6px;
+      background: var(--surface2);
+      border-bottom: 2px solid var(--border);
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--blue));
+      width: 0%;
+      transition: width .1s linear;
+      box-shadow: 0 0 8px var(--green-glow);
+    }
+
+    /* ─── MAIN ───────────────────────────────────────── */
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 56px 24px 96px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── SECTION HEADERS ────────────────────────────── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      margin-top: 56px;
+    }
+
+    .section-head:first-of-type { margin-top: 0; }
+
+    .section-icon {
+      width: 40px; height: 40px;
+      flex-shrink: 0;
+      image-rendering: pixelated;
+    }
+
+    .section-title {
+      font-family: var(--pixel);
+      font-size: .75rem;
+      color: var(--text);
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: .04em;
+    }
+
+    .section-divider {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* ─── INFO CARD ──────────────────────────────────── */
+    .info-card {
+      margin-bottom: 56px;
+    }
+
+    .info-card-header {
+      background: var(--surface2);
+      padding: 10px 18px;
+      font-family: var(--pixel);
+      font-size: .55rem;
+      color: var(--muted);
+      letter-spacing: .1em;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .info-rows { }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-row .label {
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .info-row .value {
+      font-family: 'Courier New', monospace;
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      cursor: default;
+      transition: border-color .15s;
+    }
+
+    .info-row .value:hover {
+      border-color: var(--green);
+      color: var(--green-lt);
+    }
+
+    .info-row .value.online {
+      color: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 0 8px var(--green-glow);
+    }
+
+    /* ─── STEPS ──────────────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+
+    .step {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 0;
+      position: relative;
+      cursor: default;
+    }
+
+    /* connector line */
+    .step:not(:last-child) .step-spine::after {
+      content: '';
+      position: absolute;
+      left: 31px;
+      top: 72px;
+      bottom: -1px;
+      width: 2px;
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--border) 0px, var(--border) 4px,
+        transparent 4px, transparent 8px
+      );
+    }
+
+    .step-spine {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+    }
+
+    .step-num {
+      width: 48px; height: 48px;
+      background: var(--surface2);
+      border: 3px solid var(--border);
+      outline: 2px solid var(--bg);
+      outline-offset: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--pixel);
+      font-size: .7rem;
+      color: var(--muted);
+      transition: border-color .2s, color .2s, box-shadow .2s;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step.done .step-num {
+      border-color: var(--green);
+      color: var(--green);
+      box-shadow: 0 0 12px var(--green-glow);
+      background: rgba(90,173,30,.1);
+    }
+
+    .step-body {
+      padding: 20px 0 32px 20px;
+    }
+
+    .step-body h3 {
+      font-family: var(--body);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f0f7f0;
+      margin-bottom: 10px;
+      letter-spacing: .01em;
+    }
+
+    .step-body p, .step-body ul, .step-body ol {
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.75;
+    }
+
+    .step-body ul, .step-body ol {
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+
+    .step-body li {
+      margin-bottom: 5px;
+      color: var(--text);
+      font-size: .9rem;
+    }
+
+    .step-body li strong { color: #f0f7f0; }
+
+    /* ─── CALLOUTS ───────────────────────────────────── */
+    .callout {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      font-size: .88rem;
+      margin-top: 12px;
+      border-left: 4px solid;
+      background: var(--surface2);
+    }
+
+    .callout.tip   { border-color: var(--green); color: #a7e48a; }
+    .callout.warn  { border-color: var(--gold);  color: #fde68a; }
+    .callout.info  { border-color: var(--blue);  color: #b3e9f8; }
+
+    .callout-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-style: normal;
+    }
+
+    /* ─── CODE ───────────────────────────────────────── */
+    code {
+      background: #0d1a0d;
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      font-family: 'Courier New', monospace;
+      font-size: .85em;
+      color: #a78bfa;
+    }
+
+    /* ─── SCREENSHOTS ────────────────────────────────── */
+    .screenshot {
+      display: block;
+      max-width: 460px;
+      width: 100%;
+      margin-top: 14px;
+      border: 3px solid var(--border);
+      outline: 1px solid #0d0f0d;
+      image-rendering: pixelated;
+    }
+
+    /* placeholder shown when img fails to load */
+    .screenshot-wrap {
+      display: block;
+      max-width: 460px;
+      width: 100%;
+      margin-top: 14px;
+    }
+    .screenshot-wrap img {
+      display: block;
+      width: 100%;
+      border: 3px solid var(--border);
+    }
+    .screenshot-wrap img[src=""] ,
+    .screenshot-placeholder {
+      display: block;
+      width: 100%;
+      height: 160px;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          #1a1f1a 0px, #1a1f1a 10px,
+          #222722 10px, #222722 20px
+        );
+      border: 3px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-family: 'Courier New', monospace;
+      font-size: .75rem;
+      text-align: center;
+      padding: 12px;
+    }
+
+    /* ─── BLOCK ICONS (pure CSS/SVG) ─────────────────── */
+    .block-grass {
+      width: 40px; height: 40px;
+      background:
+        linear-gradient(180deg,
+          #5aad1e 0%, #5aad1e 40%,
+          #7a4f2a 40%, #7a4f2a 100%
+        );
+      image-rendering: pixelated;
+    }
+
+    .block-book {
+      width: 40px; height: 40px;
+      background: #8b2222;
+      image-rendering: pixelated;
+    }
+
+    /* ─── FINISH BANNER ──────────────────────────────── */
+    .finish-banner {
+      margin-top: 64px;
+      text-align: center;
+      padding: 40px 24px;
+      background: var(--surface);
+      border: 3px solid var(--green);
+      box-shadow: 0 0 32px var(--green-glow), inset 0 0 32px rgba(90,173,30,.04);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .finish-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 20px,
+        rgba(90,173,30,.02) 20px,
+        rgba(90,173,30,.02) 40px
+      );
+    }
+
+    .finish-title {
+      font-family: var(--pixel);
+      font-size: clamp(.7rem, 2vw, 1.1rem);
+      color: var(--green-lt);
+      text-shadow: 3px 3px 0 #1a2e1a, 0 0 24px var(--green-glow);
+      margin-bottom: 10px;
+      position: relative;
+    }
+
+    .finish-sub {
+      color: var(--muted);
+      font-size: .9rem;
+      position: relative;
+    }
+
+    /* ─── FOOTER ─────────────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-dirt {
+      height: 16px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          #7a4f2a 0px, #7a4f2a 8px,
+          #6b4422 8px, #6b4422 16px
+        );
+    }
+
+    .footer-grass {
+      height: 24px;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          #4a8a1c 0px, #4a8a1c 16px,
+          #3d7318 16px, #3d7318 32px
+        );
+    }
+
+    .footer-inner {
+      text-align: center;
+      padding: 20px;
+      background: var(--surface);
+      color: var(--muted);
+      font-family: var(--pixel);
+      font-size: .45rem;
+      letter-spacing: .1em;
+      border-top: 2px solid var(--border);
+    }
+
+    /* ─── DONE CHECKMARK ─────────────────────────────── */
+    .step-check {
+      display: none;
+      font-size: .8rem;
+    }
+    .step.done .step-check { display: block; }
+    .step.done .step-num-text { display: none; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 520px) {
+      .step { grid-template-columns: 48px 1fr; }
+      .hero-title { font-size: 1rem; }
+      .info-row { flex-direction: column; align-items: flex-start; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+
+<!-- ── HEADER ─────────────────────────────────────── -->
+<header>
+  <div class="grass-strip"></div>
+  <div class="dirt-strip"></div>
+  <div class="header-inner">
+    <span class="server-tag">⛏ Tantuni Gaming ⛏</span>
+    <h1 class="hero-title">
+      Sunucu Kurulum<br><span>Rehberi</span>
+    </h1>
+    <p class="hero-sub">5 adımda modpack'i yükle, sunucuya katıl ve oynamaya başla.</p>
+
+  </div>
+  <div class="dirt-strip"></div>
+  <div class="grass-strip"></div>
+</header>
+
+<!-- ── MAIN ───────────────────────────────────────── -->
+<main>
+
+  <!-- CONNECTION INFO -->
+  <div class="section-head">
+    <svg class="section-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect width="16" height="16" fill="#7a4f2a"/>
+      <rect x="2" y="2" width="4" height="4" fill="#5a3818"/>
+      <rect x="10" y="2" width="4" height="4" fill="#5a3818"/>
+      <rect x="2" y="10" width="4" height="4" fill="#5a3818"/>
+      <rect x="10" y="10" width="4" height="4" fill="#5a3818"/>
+      <rect x="6" y="6" width="4" height="4" fill="#9a6a3a"/>
+    </svg>
+    <span class="section-title">Bağlantı Bilgileri</span>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="info-card px-panel">
+    <div class="info-card-header">// HIZLI REFERANS</div>
+    <div class="info-rows">
+      <div class="info-row">
+        <span class="label">Sunucu Adresi</span>
+        <span class="value online">100.122.30.65</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Minecraft Sürümü</span>
+        <span class="value">26.1.2</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Modpack Tipi</span>
+        <span class="value">.mrpack</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="section-head">
+    <svg class="section-icon" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect width="16" height="16" fill="#5aad1e"/>
+      <rect x="0" y="10" width="16" height="6" fill="#7a4f2a"/>
+      <rect x="2" y="11" width="4" height="3" fill="#5a3818"/>
+      <rect x="10" y="12" width="3" height="2" fill="#5a3818"/>
+      <rect x="3" y="7" width="2" height="3" fill="#3d7318"/>
+      <rect x="8" y="6" width="2" height="4" fill="#3d7318"/>
+      <rect x="12" y="7" width="2" height="3" fill="#3d7318"/>
+    </svg>
+    <span class="section-title">Adım Adım Kurulum</span>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="steps" id="steps">
+
+    <div class="step" data-step="0">
+      <div class="step-spine">
+        <div class="step-num">
+          <span class="step-num-text">01</span>
+          <span class="step-check">✔</span>
+        </div>
+      </div>
+      <div class="step-body">
+        <h3>Modrinth App'i İndir (Yüklü Değilse)</h3>
+        <p>Modpack'i yönetmek için kullandığımız başlatıcı olan <strong>Modrinth App</strong>'i indirip kur.</p>
+        <div class="callout info">
+          <em class="callout-icon">ℹ</em>
+          <span><strong>modrinth.com/app</strong> adresine git ve işletim sistemine uygun yükleyiciyi indir — Windows, Mac veya Linux. Çalıştır ve kurulumu tamamla.</span>
+        </div>
+        <button class="step-btn" onclick="markDone(0)">Tamamlandı →</button>
+      </div>
+    </div>
+
+    <div class="step" data-step="1">
+      <div class="step-spine">
+        <div class="step-num">
+          <span class="step-num-text">02</span>
+          <span class="step-check">✔</span>
+        </div>
+      </div>
+      <div class="step-body">
+        <h3>Microsoft Hesabınla Giriş Yap</h3>
+        <p>Modrinth App'i aç, sağ üst köşedeki <strong>Giriş Yap</strong> butonuna tıkla. Minecraft: Java Edition satın aldığın Microsoft hesabınla giriş yap.</p>
+        <div class="callout warn">
+          <em class="callout-icon">⚠</em>
+          <span>Sunucuya girebilmek için gerçek bir <strong>Minecraft: Java Edition</strong> lisansına ihtiyacın var. Crack hesaplar bu sunucuda çalışmaz.</span>
+        </div>
+        <button class="step-btn" onclick="markDone(1)">Tamamlandı →</button>
+      </div>
+    </div>
+
+    <div class="step" data-step="2">
+      <div class="step-spine">
+        <div class="step-num">
+          <span class="step-num-text">03</span>
+          <span class="step-check">✔</span>
+        </div>
+      </div>
+      <div class="step-body">
+        <h3>Modpack'i Yükle</h3>
+        <p>Önce modpack dosyasını indir, ardından Modrinth App'e ekle:</p>
+        <a class="download-btn" href="tantunigaming.mrpack" download>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 3v13M5 13l7 7 7-7"/><path d="M3 21h18"/></svg>
+          Modpack'i İndir (.mrpack)
+        </a>
+        <p style="margin-top:18px">Dosyayı indirdikten sonra Modrinth App'e ekle:</p>
+        <ol>
+          <li>Sol kenar çubuğundaki <strong>+</strong> butonuna tıkla</li>
+        </ol>
+        <img src="createnewinstance.png" alt="Yeni instance oluştur" class="screenshot" />
+        <ol start="2">
+          <li>Açılan ekranda <strong>Modpack</strong> seçeneğine tıkla</li>
+        </ol>
+        <img src="addmodpack.png" alt="Modpack seç" class="screenshot" />
+        <ol start="3">
+          <li><strong>Import Modpack</strong>'e tıkla ve indirdiğin <code>.mrpack</code> dosyasını seç</li>
+        </ol>
+        <img src="browsemodpack.png" alt="Modpack içe aktar" class="screenshot" />
+        <button class="step-btn" onclick="markDone(2)">Tamamlandı →</button>
+      </div>
+    </div>
+
+    <div class="step" data-step="3">
+      <div class="step-spine">
+        <div class="step-num">
+          <span class="step-num-text">04</span>
+          <span class="step-check">✔</span>
+        </div>
+      </div>
+      <div class="step-body">
+        <h3>Modpack'i Başlat</h3>
+        <p>Instance üzerindeki <strong>Oyna</strong> butonuna tıkla. İlk açılışta tüm modlar indirilir — bağlantı hızına göre 1–2 dakika sürebilir.</p>
+        <img src="clickinstanceandplay.png" alt="Instance'a tıkla ve oyna" class="screenshot" />
+        <div class="callout tip">
+          <em class="callout-icon">✓</em>
+          <span>Ana menünün tamamen yüklenmesini bekle, ardından bir sonraki adıma geç.</span>
+        </div>
+        <button class="step-btn" onclick="markDone(3)">Tamamlandı →</button>
+      </div>
+    </div>
+
+    <div class="step" data-step="4">
+      <div class="step-spine">
+        <div class="step-num">
+          <span class="step-num-text">05</span>
+          <span class="step-check">✔</span>
+        </div>
+      </div>
+      <div class="step-body">
+        <h3>Sunucuyu Ekle ve Katıl</h3>
+        <p>Minecraft ana menüsünden:</p>
+        <ol>
+          <li><strong>Çok Oyunculu</strong>'ya tıkla</li>
+          <li><strong>Sunucu Ekle</strong>'ye tıkla</li>
+          <li>Adrese <code>100.122.30.65</code> gir</li>
+          <li><strong>Bitti</strong>'ye tıkla, ardından sunucuya çift tıkla</li>
+        </ol>
+        <div class="callout tip">
+          <em class="callout-icon">✓</em>
+          <span>Sunucu yeşil ping ikonu gösteriyorsa hazırsın — tıkla ve <strong>Sunucuya Katıl!</strong></span>
+        </div>
+        <button class="step-btn" onclick="markDone(4)">Tamamlandı →</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FINISH -->
+  <div class="finish-banner px-panel" id="finish-banner" style="display:none">
+    <div class="finish-title">🎉 Hazırsın! Hoş Geldin!</div>
+    <p class="finish-sub">Tüm adımları tamamladın. Tantuni Gaming sunucusuna hoş geldin — iyi oyunlar!</p>
+  </div>
+
+</main>
+
+<!-- ── FOOTER ──────────────────────────────────────── -->
+<footer>
+  <div class="footer-grass"></div>
+  <div class="footer-dirt"></div>
+  <div class="footer-inner">Tantuni Gaming &nbsp;·&nbsp; 2026</div>
+</footer>
+
+<style>
+  .step-btn {
+    margin-top: 16px;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    color: var(--muted);
+    font-family: var(--pixel);
+    font-size: .5rem;
+    padding: 10px 16px;
+    cursor: pointer;
+    letter-spacing: .06em;
+    transition: border-color .15s, color .15s, box-shadow .15s;
+    display: inline-block;
+  }
+  .step-btn:hover {
+    border-color: var(--green);
+    color: var(--green-lt);
+    box-shadow: 0 0 10px var(--green-glow);
+  }
+  .step.done .step-btn {
+    display: none;
+  }
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px 22px;
+    background: var(--surface2);
+    border: 2px solid var(--green);
+    color: var(--green-lt);
+    font-family: var(--pixel);
+    font-size: .55rem;
+    letter-spacing: .06em;
+    text-decoration: none;
+    box-shadow: 0 0 14px var(--green-glow);
+    transition: background .15s, box-shadow .15s;
+  }
+  .download-btn:hover {
+    background: rgba(90,173,30,.12);
+    box-shadow: 0 0 24px var(--green-glow);
+  }
+</style>
+
+<script>
+// ── END PORTAL STARS ───────────────────────────────
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize); resize();
+
+
+
+// parse hex to rgb for trail rendering
+function hexRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n>>16)&255,(n>>8)&255,n&255];
+}
+
+// Colors: heavy on cyan/blue/green, some purple, no yellow/gray
+const STAR_COLORS = [
+  '#06b6d4','#06b6d4','#06b6d4',   // cyan x3
+  '#22d3ee','#22d3ee','#22d3ee',   // light cyan x3
+  '#2dd4bf','#2dd4bf',             // teal x2
+  '#67e8f9','#67e8f9',             // sky x2
+  '#38bdf8','#38bdf8',             // blue x2
+  '#60a5fa',                       // blue
+  '#4ade80','#4ade80',             // green x2
+  '#34d399',                       // emerald
+  '#a78bfa',                       // soft purple
+  '#c084fc',                       // lilac
+  '#ffffff','#ffffff',             // white x2
+  '#e0f2fe',                       // pale blue-white
+];
+
+function randSize() {
+  const r = Math.random();
+  if (r < 0.60) return 2;
+  if (r < 0.82) return 4;
+  if (r < 0.93) return 6;
+  if (r < 0.98) return 8;
+  return 10;
+}
+
+// draw a rotated square centered at (cx,cy)
+function drawSquare(cx, cy, size, angle, color, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.fillRect(-size/2, -size/2, size, size);
+  ctx.restore();
+}
+
+// Each unique (color, size) pair gets a fixed travel angle
+const directionMap = {};
+function getGroupAngle(color, size) {
+  const key = color + '_' + size;
+  if (!(key in directionMap)) {
+    directionMap[key] = Math.random() * Math.PI * 2;
+  }
+  return directionMap[key];
+}
+
+class Star {
+  constructor() { this.reset(true); }
+  reset(init) {
+    this.size = randSize();
+    this.color = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
+    const angle = getGroupAngle(this.color, this.size);
+    const speed = 0.1 + Math.random() * 0.4;
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed;
+    this.angle = angle;
+    this.alpha = 0.2 + Math.random() * 0.35;
+    if (init) {
+      this.x = Math.random() * W;
+      this.y = Math.random() * H;
+    } else {
+      const edge = Math.floor(Math.random() * 4);
+      if (edge === 0) { this.x = Math.random() * W; this.y = -12; }
+      else if (edge === 1) { this.x = W + 12; this.y = Math.random() * H; }
+      else if (edge === 2) { this.x = Math.random() * W; this.y = H + 12; }
+      else { this.x = -12; this.y = Math.random() * H; }
+    }
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < -20 || this.x > W+20 || this.y < -20 || this.y > H+20) this.reset(false);
+  }
+  draw() {
+    const s = this.size;
+    const a = this.angle;
+    // tail squares: behind the star, fading
+    const tailAlphas = [0.28, 0.12, 0.04];
+    for (let t = 1; t <= 3; t++) {
+      drawSquare(
+        this.x - this.vx/Math.hypot(this.vx,this.vy) * s * t,
+        this.y - this.vy/Math.hypot(this.vx,this.vy) * s * t,
+        s, a, this.color, this.alpha * tailAlphas[t-1]
+      );
+    }
+    // main star square
+    drawSquare(this.x, this.y, s, a, this.color, this.alpha);
+  }
+}
+
+// Background fuzzy micro-stars — immeasurable tiny static dots
+const BG_COUNT = window.innerWidth < 768 ? 8000 : 40000;
+const bgStars = [];
+function initBgStars() {
+  bgStars.length = 0;
+  for (let i = 0; i < BG_COUNT; i++) {
+    const c = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
+    bgStars.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      s: Math.random() < 0.75 ? 1 : Math.random() < 0.92 ? 2 : 3,
+      color: c,
+      alpha: 0.18 + Math.random() * 0.35,
+    });
+  }
+}
+initBgStars();
+window.addEventListener('resize', () => { initBgStars(); bgCanvas = null; });
+
+// render bg stars to offscreen canvas once — fast blit per frame
+let bgCanvas = null, bgCtx = null;
+function buildBgCanvas() {
+  bgCanvas = document.createElement('canvas');
+  bgCanvas.width = W; bgCanvas.height = H;
+  bgCtx = bgCanvas.getContext('2d');
+  bgStars.forEach(b => {
+    bgCtx.globalAlpha = b.alpha;
+    bgCtx.fillStyle = b.color;
+    bgCtx.fillRect(b.x, b.y, b.s, b.s);
+  });
+  bgCtx.globalAlpha = 1;
+}
+
+function drawBgStars() {
+  if (!bgCanvas || bgCanvas.width !== W || bgCanvas.height !== H) buildBgCanvas();
+  ctx.globalAlpha = 1;
+  ctx.drawImage(bgCanvas, 0, 0);
+}
+
+const isMobile = window.innerWidth < 768;
+const stars = Array.from({length: isMobile ? 1200 : 6000}, () => new Star());
+
+function animatePortal() {
+  ctx.clearRect(0, 0, W, H);
+
+  // static background fuzz first
+  drawBgStars();
+
+  // moving stars on top
+  stars.forEach(s => { s.update(); s.draw(); });
+
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animatePortal);
+}
+animatePortal();
+
+// ── PROGRESS ───────────────────────────────────────
+window.addEventListener('scroll', () => {
+  const el = document.documentElement;
+  const pct = el.scrollTop / (el.scrollHeight - el.clientHeight) * 100;
+  document.getElementById('progress').style.width = pct + '%';
+});
+
+// ── STEP DONE ──────────────────────────────────────
+const STORAGE_KEY = 'tantuni-steps-done';
+let done = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function markDone(i) {
+  if (!done.includes(i)) { done.push(i); localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }
+  applyDone();
+}
+
+function applyDone() {
+  document.querySelectorAll('.step').forEach(el => {
+    const i = parseInt(el.dataset.step);
+    el.classList.toggle('done', done.includes(i));
+  });
+  if (done.length === 5) document.getElementById('finish-banner').style.display = 'block';
+}
+
+applyDone();
+</script>
+
+</body>
+</html>
+
