@@ -831,7 +831,8 @@ class Star {
     this.size = randSize();
     this.color = STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)];
     const angle = getGroupAngle(this.color, this.size);
-    const speed = 0.1 + Math.random() * 0.4;
+    const speedScale = window.innerWidth < 768 ? 0.4 : 1;
+    const speed = (0.1 + Math.random() * 0.4) * speedScale;
     this.vx = Math.cos(angle) * speed;
     this.vy = Math.sin(angle) * speed;
     this.angle = angle;
