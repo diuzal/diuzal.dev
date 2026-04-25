@@ -633,7 +633,6 @@
           <em class="callout-icon">ℹ</em>
           <span><strong>modrinth.com/app</strong> adresine git ve işletim sistemine uygun yükleyiciyi indir — Windows, Mac veya Linux. Çalıştır ve kurulumu tamamla.</span>
         </div>
-        <button class="step-btn" onclick="markDone(0)">Tamamlandı →</button>
       </div>
     </div>
 
@@ -651,7 +650,6 @@
           <em class="callout-icon">⚠</em>
           <span>Sunucuya girebilmek için gerçek bir <strong>Minecraft: Java Edition</strong> lisansına ihtiyacın var. Crack hesaplar bu sunucuda çalışmaz.</span>
         </div>
-        <button class="step-btn" onclick="markDone(1)">Tamamlandı →</button>
       </div>
     </div>
 
@@ -682,7 +680,6 @@
           <li><strong>Import Modpack</strong>'e tıkla ve indirdiğin <code>.mrpack</code> dosyasını seç</li>
         </ol>
         <img src="images/browsemodpack.png" alt="Modpack içe aktar" class="screenshot" />
-        <button class="step-btn" onclick="markDone(2)">Tamamlandı →</button>
       </div>
     </div>
 
@@ -701,7 +698,6 @@
           <em class="callout-icon">✓</em>
           <span>Ana menünün tamamen yüklenmesini bekle, ardından bir sonraki adıma geç.</span>
         </div>
-        <button class="step-btn" onclick="markDone(3)">Tamamlandı →</button>
       </div>
     </div>
 
@@ -725,17 +721,11 @@
           <em class="callout-icon">✓</em>
           <span>Sunucu yeşil ping ikonu gösteriyorsa hazırsın — tıkla ve <strong>Sunucuya Katıl!</strong></span>
         </div>
-        <button class="step-btn" onclick="markDone(4)">Tamamlandı →</button>
       </div>
     </div>
 
   </div>
 
-  <!-- FINISH -->
-  <div class="finish-banner px-panel" id="finish-banner" style="display:none">
-    <div class="finish-title">🎉 Hazırsın! Hoş Geldin!</div>
-    <p class="finish-sub">Tüm adımları tamamladın. Tantuni Gaming sunucusuna hoş geldin — iyi oyunlar!</p>
-  </div>
 
 </main>
 
@@ -747,28 +737,7 @@
 </footer>
 
 <style>
-  .step-btn {
-    margin-top: 16px;
-    background: var(--surface2);
-    border: 2px solid var(--border);
-    color: var(--muted);
-    font-family: var(--pixel);
-    font-size: .5rem;
-    padding: 10px 16px;
-    cursor: pointer;
-    letter-spacing: .06em;
-    transition: border-color .15s, color .15s, box-shadow .15s;
-    display: inline-block;
-  }
-  .step-btn:hover {
-    border-color: var(--green);
-    color: var(--green-lt);
-    box-shadow: 0 0 10px var(--green-glow);
-  }
-  .step.done .step-btn {
-    display: none;
-  }
-  .download-btn {
+.download-btn {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -963,24 +932,6 @@ window.addEventListener('scroll', () => {
   document.getElementById('progress').style.width = pct + '%';
 });
 
-// ── STEP DONE ──────────────────────────────────────
-const STORAGE_KEY = 'tantuni-steps-done';
-let done = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-
-function markDone(i) {
-  if (!done.includes(i)) { done.push(i); localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }
-  applyDone();
-}
-
-function applyDone() {
-  document.querySelectorAll('.step').forEach(el => {
-    const i = parseInt(el.dataset.step);
-    el.classList.toggle('done', done.includes(i));
-  });
-  if (done.length === 5) document.getElementById('finish-banner').style.display = 'block';
-}
-
-applyDone();
 </script>
 
 </body>
