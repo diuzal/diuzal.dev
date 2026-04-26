@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tantuni Gaming — Sunucu Kurulum Rehberi</title>
+  <title>Tantuni Gaming - Sunucu Kurulum Rehberi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -331,16 +331,17 @@
     }
 
     .step-body h3 {
-      font-family: var(--body);
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #f0f7f0;
-      margin-bottom: 10px;
-      letter-spacing: .01em;
+      font-family: var(--pixel);
+      font-size: .85rem;
+      font-weight: 400;
+      color: var(--green-lt);
+      margin-bottom: 14px;
+      letter-spacing: .05em;
+      line-height: 2;
     }
 
     .step-body p, .step-body ul, .step-body ol {
-      color: var(--muted);
+      color: var(--text);
       font-size: .95rem;
       line-height: 1.75;
     }
@@ -393,12 +394,11 @@
     /* ─── SCREENSHOTS ────────────────────────────────── */
     .screenshot {
       display: block;
-      max-width: 460px;
+      max-width: 100%;
       width: 100%;
       margin-top: 14px;
       border: 3px solid var(--border);
       outline: 1px solid #0d0f0d;
-      image-rendering: pixelated;
     }
 
     /* placeholder shown when img fails to load */
@@ -595,10 +595,7 @@
         <span class="label">Minecraft Sürümü</span>
         <span class="value">26.1.2</span>
       </div>
-      <div class="info-row">
-        <span class="label">Modpack Tipi</span>
-        <span class="value">.mrpack</span>
-      </div>
+
     </div>
   </div>
 
@@ -627,12 +624,31 @@
         </div>
       </div>
       <div class="step-body">
-        <h3>Modrinth App'i İndir (Yüklü Değilse)</h3>
-        <p>Modpack'i yönetmek için kullandığımız başlatıcı olan <strong>Modrinth App</strong>'i indirip kur.</p>
+        <h3>Tailscale Kur ve Ağa Katıl</h3>
         <div class="callout info">
           <em class="callout-icon">ℹ</em>
-          <span><strong>modrinth.com/app</strong> adresine git ve işletim sistemine uygun yükleyiciyi indir — Windows, Mac veya Linux. Çalıştır ve kurulumu tamamla.</span>
+          <span>Sunucumuz herkese açık değil, sadece ortak bir özel ağ üzerinden erişilebilir. <strong>Tailscale</strong> bu ağı kuran uygulama; VPN gibi çalışır ama kurulumu çok daha basittir.</span>
         </div>
+        <ol>
+          <li><a href="https://tailscale.com/download" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px"><strong>tailscale.com/download</strong></a> adresine git ve işletim sistemine uygun uygulamayı indir, kur.</li>
+        </ol>
+        <a class="download-btn" href="https://tailscale.com/download" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 3v13M5 13l7 7 7-7"/><path d="M3 21h18"/></svg>
+          Tailscale'i İndir
+        </a>
+        <ol start="2">
+          <li>Uygulamayı aç ve <strong>Sign in</strong>'e tıkla. Google, Microsoft veya Apple hesabınla giriş yapabilirsin, hangisi kolayına geliyorsa.</li>
+          <li>Kendi cihazını ekledikten sonra <strong>Add second device</strong> adımı çıkacak, orada <strong>Skip introduction</strong>'a tıkla.</li>
+        </ol>
+        <img src="images/tailscale.png" alt="Tailscale skip introduction" class="screenshot" />
+        <ol start="4">
+          <li>WhatsApp'tan atacağım davet linkine tıkla ve açılan sayfada <strong>Accept</strong>'e bas. Bu kadar, artık ağdasın.</li>
+        </ol>
+        <div class="callout tip">
+          <em class="callout-icon">✓</em>
+          <span>Tailscale çalışıyorsa sistem tepsisinde küçük bir ikon görürsün. Oyun oynarken arka planda açık kalması yeterli.</span>
+        </div>
+        <img src="images/tray.png" alt="Sistem tepsisi Tailscale ikonu" class="screenshot" />
       </div>
     </div>
 
@@ -644,9 +660,18 @@
         </div>
       </div>
       <div class="step-body">
-        <h3>Microsoft Hesabınla Giriş Yap</h3>
-        <p>Modrinth App'i aç, sağ üst köşedeki <strong>Giriş Yap</strong> butonuna tıkla. Minecraft: Java Edition satın aldığın Microsoft hesabınla giriş yap.</p>
-        <div class="callout warn">
+        <h3>Modrinth App'i İndir ve Giriş Yap</h3>
+        <div class="callout info" style="margin-bottom:14px">
+          <em class="callout-icon">ℹ</em>
+          <span><strong>Modrinth App</strong>, Minecraft modpacklerini kolayca yükleyip başlatmana yarayan bir uygulama. Bunu kullanarak oyunu doğru mod sürümüyle açacaksın.</span>
+        </div>
+        <p><a href="https://modrinth.com/app" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:3px"><strong>modrinth.com/app</strong></a> adresine git ve işletim sistemine uygun yükleyiciyi indir. Çalıştır ve kurulumu tamamla.</p>
+        <a class="download-btn" href="https://modrinth.com/app" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 3v13M5 13l7 7 7-7"/><path d="M3 21h18"/></svg>
+          Modrinth App'i İndir
+        </a>
+        <p style="margin-top:14px">Kurulum bittikten sonra uygulamayı aç, sağ üst köşedeki <strong>Giriş Yap</strong> butonuna tıkla. Minecraft: Java Edition satın aldığın Microsoft hesabınla giriş yap.</p>
+        <div class="callout warn" style="margin-top:12px">
           <em class="callout-icon">⚠</em>
           <span>Sunucuya girebilmek için gerçek bir <strong>Minecraft: Java Edition</strong> lisansına ihtiyacın var. Crack hesaplar bu sunucuda çalışmaz.</span>
         </div>
@@ -662,24 +687,15 @@
       </div>
       <div class="step-body">
         <h3>Modpack'i Yükle</h3>
-        <p>Önce modpack dosyasını indir, ardından Modrinth App'e ekle:</p>
-        <a class="download-btn" href="tantunigaming.mrpack" download>
+        <p>Aşağıdaki butona tıklayarak modpack sayfasına git ve Modrinth App üzerinden yükle:</p>
+        <div class="callout info" style="margin-bottom:14px">
+          <em class="callout-icon">ℹ</em>
+          <span>İndirme linkine tıkladıktan sonra <strong>Modrinth app ile yükle</strong> seçeneğine tıkla.</span>
+        </div>
+        <a class="download-btn" href="https://modrinth.com/modpack/tantuni-gaming#download" target="_blank" rel="noopener">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square"><path d="M12 3v13M5 13l7 7 7-7"/><path d="M3 21h18"/></svg>
-          Modpack'i İndir (.mrpack)
+          Modpack'i İndir (Modrinth)
         </a>
-        <p style="margin-top:18px">Dosyayı indirdikten sonra Modrinth App'e ekle:</p>
-        <ol>
-          <li>Sol kenar çubuğundaki <strong>+</strong> butonuna tıkla</li>
-        </ol>
-        <img src="images/createnewinstance.png" alt="Yeni instance oluştur" class="screenshot" />
-        <ol start="2">
-          <li>Açılan ekranda <strong>Modpack</strong> seçeneğine tıkla</li>
-        </ol>
-        <img src="images/addmodpack.png" alt="Modpack seç" class="screenshot" />
-        <ol start="3">
-          <li><strong>Import Modpack</strong>'e tıkla ve indirdiğin <code>.mrpack</code> dosyasını seç</li>
-        </ol>
-        <img src="images/browsemodpack.png" alt="Modpack içe aktar" class="screenshot" />
       </div>
     </div>
 
@@ -692,7 +708,7 @@
       </div>
       <div class="step-body">
         <h3>Modpack'i Başlat</h3>
-        <p>Instance üzerindeki <strong>Oyna</strong> butonuna tıkla. İlk açılışta tüm modlar indirilir — bağlantı hızına göre 1–2 dakika sürebilir.</p>
+        <p>Instance üzerindeki <strong>Oyna</strong> butonuna tıkla. İlk açılışta tüm modlar indirilir, bağlantı hızına göre 1–2 dakika sürebilir.</p>
         <img src="images/clickinstanceandplay.png" alt="Instance'a tıkla ve oyna" class="screenshot" />
         <div class="callout tip">
           <em class="callout-icon">✓</em>
@@ -712,14 +728,14 @@
         <h3>Sunucuyu Ekle ve Katıl</h3>
         <p>Minecraft ana menüsünden:</p>
         <ol>
-          <li><strong>Çok Oyunculu</strong>'ya tıkla</li>
-          <li><strong>Sunucu Ekle</strong>'ye tıkla</li>
-          <li>Adrese <code>100.122.30.65</code> gir</li>
-          <li><strong>Bitti</strong>'ye tıkla, ardından sunucuya çift tıkla</li>
+          <li><strong>Çok Oyunculu</strong>'ya tıkla.</li>
+          <li><strong>Sunucu Ekle</strong>'ye tıkla.</li>
+          <li>Adrese <code>100.122.30.65</code> gir.</li>
+          <li><strong>Bitti</strong>'ye tıkla, ardından sunucuya çift tıkla.</li>
         </ol>
         <div class="callout tip">
           <em class="callout-icon">✓</em>
-          <span>Sunucu yeşil ping ikonu gösteriyorsa hazırsın — tıkla ve <strong>Sunucuya Katıl!</strong></span>
+          <span>Sunucu yeşil ping ikonu gösteriyorsa hazırsın, tıkla ve <strong>Sunucuya Katıl!</strong></span>
         </div>
       </div>
     </div>
