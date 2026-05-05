@@ -1,1 +1,2 @@
 # diuzal.dev
+personal website
